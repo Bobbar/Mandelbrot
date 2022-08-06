@@ -179,7 +179,7 @@ namespace Mandelbrot
             return res;
         }
 
-        private double GetRelPoint(int pixel, int length, PointD set)
+        private double GetRelPoint(double pixel, float length, PointD set)
         {
             return set.X + (pixel / (double)length) * (set.Y - set.X);
         }
@@ -192,11 +192,11 @@ namespace Mandelbrot
             var tmpX = new PointD(xTMinMax.X, xTMinMax.Y);
             var tmpY = new PointD(yTMinMax.X, yTMinMax.Y);
 
-            xTMinMax.X = GetRelPoint((int)(loc.X - zfw), fieldSize.Width, tmpX);
-            xTMinMax.Y = GetRelPoint((int)(loc.X + zfw), fieldSize.Width, tmpX);
+            xTMinMax.X = GetRelPoint((loc.X - zfw), fieldSize.Width, tmpX);
+            xTMinMax.Y = GetRelPoint((loc.X + zfw), fieldSize.Width, tmpX);
 
-            yTMinMax.X = GetRelPoint((int)(loc.Y - zfh), fieldSize.Height, tmpY);
-            yTMinMax.Y = GetRelPoint((int)(loc.Y + zfh), fieldSize.Height, tmpY);
+            yTMinMax.X = GetRelPoint((loc.Y - zfh), fieldSize.Height, tmpY);
+            yTMinMax.Y = GetRelPoint((loc.Y + zfh), fieldSize.Height, tmpY);
 
             Refresh();
         }
