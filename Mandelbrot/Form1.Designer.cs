@@ -56,6 +56,8 @@
             this.d2dControl1 = new unvell.D2DLib.WinForm.D2DControl();
             this.PalletButton = new System.Windows.Forms.Button();
             this.smoothingCheckBox = new System.Windows.Forms.CheckBox();
+            this.saveSetButton = new System.Windows.Forms.Button();
+            this.loadSetButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cValueNumeric)).BeginInit();
@@ -84,7 +86,7 @@
             // 
             // refreshButton
             // 
-            this.refreshButton.Location = new System.Drawing.Point(50, 525);
+            this.refreshButton.Location = new System.Drawing.Point(50, 546);
             this.refreshButton.Name = "refreshButton";
             this.refreshButton.Size = new System.Drawing.Size(87, 23);
             this.refreshButton.TabIndex = 1;
@@ -369,7 +371,7 @@
             // 
             // resetButton
             // 
-            this.resetButton.Location = new System.Drawing.Point(50, 496);
+            this.resetButton.Location = new System.Drawing.Point(50, 517);
             this.resetButton.Name = "resetButton";
             this.resetButton.Size = new System.Drawing.Size(87, 23);
             this.resetButton.TabIndex = 22;
@@ -380,7 +382,7 @@
             // useOCLCheckBox
             // 
             this.useOCLCheckBox.AutoSize = true;
-            this.useOCLCheckBox.Location = new System.Drawing.Point(58, 554);
+            this.useOCLCheckBox.Location = new System.Drawing.Point(58, 575);
             this.useOCLCheckBox.Name = "useOCLCheckBox";
             this.useOCLCheckBox.Size = new System.Drawing.Size(69, 19);
             this.useOCLCheckBox.TabIndex = 23;
@@ -401,7 +403,7 @@
             // oclDeviceCombo
             // 
             this.oclDeviceCombo.FormattingEnabled = true;
-            this.oclDeviceCombo.Location = new System.Drawing.Point(14, 579);
+            this.oclDeviceCombo.Location = new System.Drawing.Point(14, 600);
             this.oclDeviceCombo.Name = "oclDeviceCombo";
             this.oclDeviceCombo.Size = new System.Drawing.Size(157, 23);
             this.oclDeviceCombo.TabIndex = 26;
@@ -448,11 +450,33 @@
             this.smoothingCheckBox.UseVisualStyleBackColor = true;
             this.smoothingCheckBox.CheckedChanged += new System.EventHandler(this.smoothingCheckBox_CheckedChanged);
             // 
+            // saveSetButton
+            // 
+            this.saveSetButton.Location = new System.Drawing.Point(28, 478);
+            this.saveSetButton.Name = "saveSetButton";
+            this.saveSetButton.Size = new System.Drawing.Size(65, 23);
+            this.saveSetButton.TabIndex = 31;
+            this.saveSetButton.Text = "Save Set";
+            this.saveSetButton.UseVisualStyleBackColor = true;
+            this.saveSetButton.Click += new System.EventHandler(this.saveSetButton_Click);
+            // 
+            // loadSetButton
+            // 
+            this.loadSetButton.Location = new System.Drawing.Point(99, 478);
+            this.loadSetButton.Name = "loadSetButton";
+            this.loadSetButton.Size = new System.Drawing.Size(65, 23);
+            this.loadSetButton.TabIndex = 32;
+            this.loadSetButton.Text = "Load Set";
+            this.loadSetButton.UseVisualStyleBackColor = true;
+            this.loadSetButton.Click += new System.EventHandler(this.loadSetButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1014, 633);
+            this.Controls.Add(this.loadSetButton);
+            this.Controls.Add(this.saveSetButton);
             this.Controls.Add(this.smoothingCheckBox);
             this.Controls.Add(this.PalletButton);
             this.Controls.Add(this.d2dControl1);
@@ -528,5 +552,7 @@
 		private unvell.D2DLib.WinForm.D2DControl d2dControl1;
 		private Button PalletButton;
 		private CheckBox smoothingCheckBox;
+		private Button saveSetButton;
+		private Button loadSetButton;
 	}
 }

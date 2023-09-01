@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot
 {
+	[Serializable]
 	public class Set
 	{
 		public PointD xTMinMax = new PointD();

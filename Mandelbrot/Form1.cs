@@ -6,11 +6,12 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Numerics;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Serialization;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Mandelbrot
 {
-	// TODO: Save/Load sets?
-
 	public partial class Form1 : Form
 	{
 		private Bitmap fieldImg;
@@ -414,6 +415,47 @@ namespace Mandelbrot
 			}
 		}
 
+		private void SaveSet()
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				dlg.Filter = "Set|*.set;";
+				if (dlg.ShowDialog() == DialogResult.OK)
+				{
+					using (var stream = new FileStream(dlg.FileName, FileMode.Create, FileAccess.Write))
+					{
+						var serializer = new XmlSerializer(typeof(Set));
+						serializer.Serialize(stream, _lastSet);
+					}
+				}
+			}
+		}
+
+		private void LoadSet()
+		{
+			using (var dlg = new OpenFileDialog())
+			{
+				dlg.Filter = "Set|*.set;";
+				if (dlg.ShowDialog() == DialogResult.OK)
+				{
+					using (var stream = new FileStream(dlg.FileName, FileMode.Open, FileAccess.Read))
+					{
+						var serializer = new XmlSerializer(typeof(Set));
+						var set = serializer.Deserialize(stream) as Set;
+
+						xTMinMax = set.xTMinMax;
+						yTMinMax = set.yTMinMax;
+						center = set.Center;
+						radius = set.Radius;
+
+						_lastSet = set;
+
+						Refresh();
+					}
+				}
+			}
+		}
+
 		private void ChoosePallet()
 		{
 			using (var palletFrm = new ChoosePalletForm(palletSource, defaultPalletSource))
@@ -559,6 +601,16 @@ namespace Mandelbrot
 		{
 			renderer.Smoothing = smoothingCheckBox.Checked;
 			Refresh();
+		}
+
+		private void loadSetButton_Click(object sender, EventArgs e)
+		{
+			LoadSet();
+		}
+
+		private void saveSetButton_Click(object sender, EventArgs e)
+		{
+			SaveSet();
 		}
 	}
 }
