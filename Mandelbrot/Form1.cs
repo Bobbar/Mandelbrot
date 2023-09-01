@@ -19,14 +19,10 @@ namespace Mandelbrot
 
 		private Size fieldSize = new Size(1000, 1000);
 		private int NUM_THREADS = 4;
-		private int colorScale = 100;
 		private int maxIterations = 1000;
-		private float cValue = 2.0f;
 		private float zoomFact = 2.0f;
 		private bool useOCL = true;
 
-		private PointD xTMinMax = new PointD(-2.0f, 0.47f);
-		private PointD yTMinMax = new PointD(-1.12f, 1.12f);
 		private PointD center = new PointD();
 		private double radius = 2.0;
 
@@ -66,13 +62,11 @@ namespace Mandelbrot
 			Init();
 
 			iterationsNumeric.Value = maxIterations;
-			cValueNumeric.Value = (decimal)cValue;
-
-			xtMinNumeric.Value = (decimal)xTMinMax.X;
-			xtMaxNumeric.Value = (decimal)xTMinMax.Y;
-			ytMinNumeric.Value = (decimal)yTMinMax.X;
-			ytMaxNumeric.Value = (decimal)yTMinMax.Y;
 			zoomFactNumeric.Value = (decimal)zoomFact;
+
+			centerXTextBox.Text = center.X.ToString();
+			centerYTextBox.Text = center.Y.ToString();
+			radiusTextBox.Text = radius.ToString();
 
 			resXTextBox.Text = fieldSize.Width.ToString();
 			resYTextBox.Text = fieldSize.Height.ToString();
@@ -153,14 +147,15 @@ namespace Mandelbrot
 
 		private void Reset()
 		{
-			xTMinMax = new PointD(-2.0f, 0.47f);
-			yTMinMax = new PointD(-1.12f, 1.12f);
-
 			center = new PointD();
 			radius = 2.0;
 
+			centerXTextBox.Text = center.X.ToString();
+			centerYTextBox.Text = center.Y.ToString();
+			radiusTextBox.Text = radius.ToString();
+
 			_prevSets.Clear();
-			_lastSet = new Set(xTMinMax, yTMinMax, center, radius);
+			_lastSet = new Set(center, radius);
 
 			Refresh();
 		}
@@ -170,6 +165,8 @@ namespace Mandelbrot
 			const int alphaOffset = 3;
 			var itVals = ItVals();
 
+			this.Text = "Mandelbrot (Processing...)";
+			
 			// Write directly to the bitmap.
 			using (var bmpLock = new BitmapLock(renderer.Image))
 			{
@@ -178,7 +175,7 @@ namespace Mandelbrot
 				if (useOCL)
 				{
 					IntPtr pxls = data.Scan0;
-					oclCompute.ComputePixels(ref pxls, maxIterations, xTMinMax, yTMinMax, new Point(fieldSize.Width, fieldSize.Height), colorScale, cValue, itVals, radius);
+					oclCompute.ComputePixels(ref pxls, maxIterations, new Point(fieldSize.Width, fieldSize.Height), itVals, radius);
 				}
 				else
 				{
@@ -207,6 +204,8 @@ namespace Mandelbrot
 			}
 
 			renderer.Refresh();
+
+			this.Text = "Mandelbrot";
 		}
 
 
@@ -214,6 +213,7 @@ namespace Mandelbrot
 		{
 			var x0 = radius * (2.0 * (double)px - (double)fieldSize.Width) / (double)fieldSize.Width;
 			var y0 = -radius * (2.0 * (double)py - (double)fieldSize.Height) / (double)fieldSize.Width;
+
 			double x = 0.0;
 			double y = 0.0;
 			double zn_size = 0;
@@ -304,15 +304,6 @@ namespace Mandelbrot
 			var zfw = fieldSize.Width * 1f;
 			var zfh = fieldSize.Height * 1f;
 
-			var tmpX = new PointD(xTMinMax.X, xTMinMax.Y);
-			var tmpY = new PointD(yTMinMax.X, yTMinMax.Y);
-
-			xTMinMax.X = GetRelPoint((nearest.X - zfw), fieldSize.Width, tmpX);
-			xTMinMax.Y = GetRelPoint((nearest.X + zfh), fieldSize.Height, tmpX);
-
-			yTMinMax.X = GetRelPoint((nearest.Y - zfw), fieldSize.Width, tmpY);
-			yTMinMax.Y = GetRelPoint((nearest.Y + zfh), fieldSize.Height, tmpY);
-
 			center.X += radius * (2.0 * nearest.X - fieldSize.Width) / fieldSize.Width;
 			center.Y += -radius * (2.0 * nearest.Y - fieldSize.Height) / fieldSize.Width;
 
@@ -321,7 +312,11 @@ namespace Mandelbrot
 			radius *= (1f - (zoomFact / 10f));
 
 			_prevSets.Add(_lastSet);
-			_lastSet = new Set(xTMinMax, yTMinMax, center, radius);
+			_lastSet = new Set(center, radius);
+
+			centerXTextBox.Text = center.X.ToString();
+			centerYTextBox.Text = center.Y.ToString();
+			radiusTextBox.Text = radius.ToString();
 
 			Refresh();
 		}
@@ -329,7 +324,7 @@ namespace Mandelbrot
 
 		private unsafe Point FindNearestValidPoint(Point loc)
 		{
-			const int range = 200;
+			const int range = 50;
 			const int BLACK_PIXEL = 0;
 
 			int startX = loc.X - range;
@@ -443,11 +438,10 @@ namespace Mandelbrot
 						var serializer = new XmlSerializer(typeof(Set));
 						var set = serializer.Deserialize(stream) as Set;
 
-						xTMinMax = set.xTMinMax;
-						yTMinMax = set.yTMinMax;
 						center = set.Center;
 						radius = set.Radius;
 
+						_prevSets.Clear();
 						_lastSet = set;
 
 						Refresh();
@@ -479,36 +473,6 @@ namespace Mandelbrot
 		{
 			maxIterations = (int)iterationsNumeric.Value;
 			Refresh();
-		}
-
-		private void cValueNumeric_ValueChanged(object sender, EventArgs e)
-		{
-			cValue = (float)cValueNumeric.Value;
-			Refresh();
-		}
-
-		private void xtMinNumeric_ValueChanged(object sender, EventArgs e)
-		{
-			xTMinMax.X = (float)xtMinNumeric.Value;
-			//Refresh();
-		}
-
-		private void xtMaxNumeric_ValueChanged(object sender, EventArgs e)
-		{
-			xTMinMax.Y = (float)xtMaxNumeric.Value;
-			//Refresh();
-		}
-
-		private void ytMinNumeric_ValueChanged(object sender, EventArgs e)
-		{
-			yTMinMax.X = (float)ytMinNumeric.Value;
-			//Refresh();
-		}
-
-		private void ytMaxNumeric_ValueChanged(object sender, EventArgs e)
-		{
-			yTMinMax.Y = (float)ytMaxNumeric.Value;
-			//Refresh();
 		}
 
 		private void zoomFactNumeric_ValueChanged(object sender, EventArgs e)
@@ -560,8 +524,6 @@ namespace Mandelbrot
 			var prevSet = _prevSets.Last();
 			_prevSets.RemoveAt(_prevSets.Count - 1);
 
-			xTMinMax = prevSet.xTMinMax;
-			yTMinMax = prevSet.yTMinMax;
 			center = prevSet.Center;
 			radius = prevSet.Radius;
 
@@ -611,6 +573,24 @@ namespace Mandelbrot
 		private void saveSetButton_Click(object sender, EventArgs e)
 		{
 			SaveSet();
+		}
+
+		private void centerXTextBox_Leave(object sender, EventArgs e)
+		{
+			if (double.TryParse(centerXTextBox.Text.Trim(), out var x))
+				center.X = x;
+		}
+
+		private void centerYTextBox_Leave(object sender, EventArgs e)
+		{
+			if (double.TryParse(centerYTextBox.Text.Trim(), out var y))
+				center.Y = y;
+		}
+
+		private void radiusTextBox_Leave(object sender, EventArgs e)
+		{
+			if (double.TryParse(radiusTextBox.Text.Trim(), out var r))
+				radius = r;
 		}
 	}
 }

@@ -71,7 +71,7 @@ clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* 
 }
 
 
-__kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, int colorScale, float cValue, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
+__kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, int2 fieldSize, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);

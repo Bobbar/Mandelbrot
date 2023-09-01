@@ -26,7 +26,7 @@ namespace Mandelbrot
 
         private ComputeKernel _computePixels;
 
-        private const int _threadsPerBlock = 16;//32;
+        private const int _threadsPerBlock = 8;//32;
         private int _gpuIndex;
         private int2 _dims;
 
@@ -141,26 +141,23 @@ namespace Mandelbrot
             _queue.WriteToBuffer(cvt, _gpuHPPoints, true, null);
         }
 
-        public void ComputePixels(ref IntPtr pixels, int maxIters, PointD xMinMax, PointD yMinMax, Point fieldSize, int colorScale, float cValue, List<Complex> hpPoints, double radius)
+        public void ComputePixels(ref IntPtr pixels, int maxIters, Point fieldSize, List<Complex> hpPoints, double radius)
         {
             UpdateHPPoints(hpPoints);
 
             int len = (_dims.X * _dims.Y) * 4;
             int2 padDims = new int2() { X = PadSize(_dims.X), Y = PadSize(_dims.Y) };
 
-            _computePixels.SetMemoryArgument(0, _gpuPixels);
-            _computePixels.SetValueArgument(1, _dims);
-            _computePixels.SetValueArgument(2, maxIters);
-            _computePixels.SetValueArgument(3, xMinMax);
-            _computePixels.SetValueArgument(4, yMinMax);
-            _computePixels.SetValueArgument(5, fieldSize);
-            _computePixels.SetValueArgument(6, colorScale);
-            _computePixels.SetValueArgument(7, cValue);
-            _computePixels.SetMemoryArgument(8, _gpuPallet);
-            _computePixels.SetValueArgument(9, (int)_gpuPallet.Count);
-            _computePixels.SetMemoryArgument(10, _gpuHPPoints);
-            _computePixels.SetValueArgument(11, (int)_gpuHPPoints.Count);
-            _computePixels.SetValueArgument(12, radius);
+            int argI = 0;
+            _computePixels.SetMemoryArgument(argI++, _gpuPixels);
+            _computePixels.SetValueArgument(argI++, _dims);
+            _computePixels.SetValueArgument(argI++, maxIters);
+            _computePixels.SetValueArgument(argI++, fieldSize);
+            _computePixels.SetMemoryArgument(argI++, _gpuPallet);
+            _computePixels.SetValueArgument(argI++, (int)_gpuPallet.Count);
+            _computePixels.SetMemoryArgument(argI++, _gpuHPPoints);
+            _computePixels.SetValueArgument(argI++, (int)_gpuHPPoints.Count);
+            _computePixels.SetValueArgument(argI++, radius);
 
             ComputeEventList evts = null;
 
