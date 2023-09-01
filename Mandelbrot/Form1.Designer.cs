@@ -53,6 +53,8 @@
             this.prevButton = new System.Windows.Forms.Button();
             this.oclDeviceCombo = new System.Windows.Forms.ComboBox();
             this.SaveButton = new System.Windows.Forms.Button();
+            this.d2dControl1 = new unvell.D2DLib.WinForm.D2DControl();
+            this.PalletButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cValueNumeric)).BeginInit();
@@ -358,10 +360,10 @@
             this.zoomFactNumeric.Size = new System.Drawing.Size(120, 23);
             this.zoomFactNumeric.TabIndex = 20;
             this.zoomFactNumeric.Value = new decimal(new int[] {
-            3,
+            35,
             0,
             0,
-            0});
+            65536});
             this.zoomFactNumeric.ValueChanged += new System.EventHandler(this.zoomFactNumeric_ValueChanged);
             // 
             // resetButton
@@ -387,7 +389,7 @@
             // 
             // prevButton
             // 
-            this.prevButton.Location = new System.Drawing.Point(50, 208);
+            this.prevButton.Location = new System.Drawing.Point(50, 169);
             this.prevButton.Name = "prevButton";
             this.prevButton.Size = new System.Drawing.Size(87, 39);
             this.prevButton.TabIndex = 25;
@@ -414,11 +416,33 @@
             this.SaveButton.UseVisualStyleBackColor = true;
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
+            // d2dControl1
+            // 
+            this.d2dControl1.BackgroundImage = null;
+            this.d2dControl1.Location = new System.Drawing.Point(90, 236);
+            this.d2dControl1.Name = "d2dControl1";
+            this.d2dControl1.ShowFPS = false;
+            this.d2dControl1.Size = new System.Drawing.Size(75, 23);
+            this.d2dControl1.TabIndex = 28;
+            this.d2dControl1.Text = "d2dControl1";
+            // 
+            // PalletButton
+            // 
+            this.PalletButton.Location = new System.Drawing.Point(46, 236);
+            this.PalletButton.Name = "PalletButton";
+            this.PalletButton.Size = new System.Drawing.Size(98, 23);
+            this.PalletButton.TabIndex = 29;
+            this.PalletButton.Text = "Choose Pallet";
+            this.PalletButton.UseVisualStyleBackColor = true;
+            this.PalletButton.Click += new System.EventHandler(this.PalletButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1014, 633);
+            this.Controls.Add(this.PalletButton);
+            this.Controls.Add(this.d2dControl1);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.oclDeviceCombo);
             this.Controls.Add(this.prevButton);
@@ -488,5 +512,7 @@
 		private Button prevButton;
 		private ComboBox oclDeviceCombo;
 		private Button SaveButton;
+		private unvell.D2DLib.WinForm.D2DControl d2dControl1;
+		private Button PalletButton;
 	}
 }

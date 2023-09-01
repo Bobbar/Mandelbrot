@@ -9,7 +9,6 @@ using System.Numerics;
 
 namespace Mandelbrot
 {
-	// TODO: Color pallet?
 	// TODO: Save/Load sets?
 	// TODO: Toggle for render interpolation?
 
@@ -23,7 +22,7 @@ namespace Mandelbrot
 		private int colorScale = 100;
 		private int maxIterations = 1000;
 		private float cValue = 2.0f;
-		private float zoomFact = 0.3f;
+		private float zoomFact = 2.0f;
 		private bool useOCL = true;
 
 		private PointD xTMinMax = new PointD(-2.0f, 0.47f);
@@ -35,6 +34,17 @@ namespace Mandelbrot
 		private int oclDeviceIdx = -1;
 
 		private List<Color> pallet = new List<Color>();
+		private List<Color> palletSource = new List<Color>();
+
+		private readonly List<Color> defaultPalletSource = new List<Color>()
+		{
+			Color.FromArgb(0,7,100),
+			Color.FromArgb(32,107,203),
+			Color.FromArgb(237,255,255),
+			Color.FromArgb(255,170,0),
+			Color.FromArgb(0,2,0)
+		};
+
 		private Point lastMouseDownLoc = new Point();
 		private List<Set> _prevSets = new List<Set>();
 		private Set _lastSet = new Set();
@@ -45,6 +55,7 @@ namespace Mandelbrot
 		{
 			InitializeComponent();
 
+			palletSource = new List<Color>(defaultPalletSource);
 			NUM_THREADS = Environment.ProcessorCount;
 
 			_refreshTimer.Interval = 250;
@@ -61,6 +72,7 @@ namespace Mandelbrot
 			xtMaxNumeric.Value = (decimal)xTMinMax.Y;
 			ytMinNumeric.Value = (decimal)yTMinMax.X;
 			ytMaxNumeric.Value = (decimal)yTMinMax.Y;
+			zoomFactNumeric.Value = (decimal)zoomFact;
 
 			resXTextBox.Text = fieldSize.Width.ToString();
 			resYTextBox.Text = fieldSize.Height.ToString();
@@ -116,15 +128,7 @@ namespace Mandelbrot
 		{
 			pallet.Clear();
 
-			var cols = new List<Color>()
-			{
-			   Color.FromArgb(0,7,100),
-			   Color.FromArgb(32,107,203),
-			   Color.FromArgb(237,255,255),
-			   Color.FromArgb(255,170,0),
-			   Color.FromArgb(0,2,0)
-			};
-
+			var cols = palletSource;
 
 			for (int i = 0; i < cols.Count; i++)
 			{
@@ -208,9 +212,6 @@ namespace Mandelbrot
 
 		private Color GetPixel(int px, int py, int maxIters, List<Complex> xVals)
 		{
-			//var x0 = Scale((double)px, xTMinMax.X, xTMinMax.Y, (double)0.0, fieldSize.Width);
-			//var y0 = Scale((double)py, yTMinMax.X, yTMinMax.Y, (double)0.0, fieldSize.Height);
-
 			var x0 = radius * (2.0 * (double)px - (double)fieldSize.Width) / (double)fieldSize.Width;
 			var y0 = -radius * (2.0 * (double)py - (double)fieldSize.Height) / (double)fieldSize.Width;
 			double x = 0.0;
@@ -325,7 +326,7 @@ namespace Mandelbrot
 			Refresh();
 		}
 
-		
+
 		private unsafe Point FindNearestValidPoint(Point loc)
 		{
 			const int range = 200;
@@ -379,7 +380,7 @@ namespace Mandelbrot
 				return minPnt;
 			}
 		}
-	
+
 
 		private void SaveImage()
 		{
@@ -391,7 +392,7 @@ namespace Mandelbrot
 				{
 					var format = ImageFormat.Bmp;
 					var ext = Path.GetExtension(dlg.FileName);
-					
+
 					switch (ext)
 					{
 						case ".jpg":
@@ -412,6 +413,20 @@ namespace Mandelbrot
 					renderer.Image.Save(dlg.FileName, format);
 				}
 			}
+		}
+
+		private void ChoosePallet()
+		{
+			using (var palletFrm = new ChoosePalletForm(palletSource, defaultPalletSource))
+			{
+				if (palletFrm.ShowDialog() == DialogResult.OK)
+				{
+					palletSource = palletFrm.PalletSource;
+				}
+			}
+
+			InitPallet();
+			Refresh();
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e)
@@ -534,6 +549,11 @@ namespace Mandelbrot
 		private void SaveButton_Click(object sender, EventArgs e)
 		{
 			SaveImage();
+		}
+
+		private void PalletButton_Click(object sender, EventArgs e)
+		{
+			ChoosePallet();
 		}
 	}
 }
