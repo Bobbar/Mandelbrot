@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Mandelbrot.Rendering
 {
@@ -95,6 +96,11 @@ namespace Mandelbrot.Rendering
         public static Point ToPoint(this PointF point)
         {
             return new Point((int)point.X, (int)point.Y);
+        }
+
+        public static double Norm(this Complex x)
+        {
+            return x.Real * x.Real + x.Imaginary * x.Imaginary;
         }
     }
 }

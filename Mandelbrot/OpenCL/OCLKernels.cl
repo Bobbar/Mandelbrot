@@ -7,54 +7,71 @@ typedef struct
 
 } clColor;
 
+constant clColor BLACK = { 0, 0, 0 };
 
-double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax);
+//double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax);
+//int GetPixel(int px, int py, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, float cValue);
+//clColor GetColor(float maxValue, float value, global clColor* pallet, int palletLen);
+
+
 double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax)
 {
 	double res = ((m - Rmin) / (Rmax - Rmin)) * (Tmax - Tmin) + Tmin;
 	return res;
 }
 
-
-int GetPixel(int px, int py, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, float cValue);
-int GetPixel(int px, int py, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, float cValue)
+double Norm(double2 c)
 {
-	double x0 = Scale((double)px, xMinMax.x, xMinMax.y, 0, fieldSize.x);
-	double y0 = Scale((double)py, yMinMax.x, yMinMax.y, 0, fieldSize.y);
+	return c.x * c.x + c.y * c.y;
+}
 
+double2 Mul(double2 a, double2 b) 
+{
+	return (double2)(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+clColor GetColor(double zn_size, int iters, global clColor* pallet, int palletLen)
+{
+	double nu = iters - log2(log2(zn_size));
+	int i = (int)(nu * 10.0) % palletLen;
+
+	if (i < 0)
+		return BLACK;
+
+	return pallet[i];
+}
+
+clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* hpPnts, int hpPntsLen, global clColor* pallet, int palletLen)
+{
+	double x0 = radius * (2.0 * (double)px - (double)fieldSize.x) / (double)fieldSize.x;
+	double y0 = -radius * (2.0 * (double)py - (double)fieldSize.y) / (double)fieldSize.x;
+	double zn_size = 0;
 	double x = 0;
 	double y = 0;
 
 	int iters = 0;
+	int max = hpPntsLen - 1;
+	double2 d0 = (double2)(x0, y0);
+	double2 dn = d0;
 
-	while (x * x + y * y <= cValue * cValue && iters < maxIters)
+	do
 	{
-		double xtemp = x * x - y * y + x0;
-		y = cValue * x * y + y0;
-		x = xtemp;
+		dn = Mul(dn, hpPnts[iters] + dn);
+		dn += d0;
 		iters++;
-	}
+		zn_size = Norm(hpPnts[iters] * 0.5 + dn);
 
-	return iters;
-}
+	} while (zn_size < 256 && iters < max);
 
-
-clColor GetColor(float maxValue, float value, global clColor* pallet, int palletLen);
-clColor GetColor(float maxValue, float value, global clColor* pallet, int palletLen)
-{
-	clColor black;
-	black.R = 0;
-	black.G = 0;
-	black.B = 0;
-
-	if (value >= maxValue)
-		return black;
+	if (iters == max)
+		return BLACK;
 	else
-		return pallet[(int)value % (palletLen - 1)];
+		return GetColor(zn_size, iters, pallet, palletLen);
+
 }
 
 
-__kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, int colorScale, float cValue, global clColor* pallet, int palletLen)
+__kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, int colorScale, float cValue, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -65,14 +82,7 @@ __kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, doubl
 	int idx = y * dims.x + x;
 	int pidx = idx * 4;
 
-	pixels[pidx] = 0;
-	pixels[pidx + 1] = 0;
-	pixels[pidx + 2] = 0;
-	pixels[pidx + 3] = 0;
-
-	int iters = GetPixel(x, y, maxIters, xMinMax, yMinMax, fieldSize, cValue);
-
-	clColor color = GetColor(maxIters, iters, pallet, palletLen);
+	clColor color = GetPixel(x, y, fieldSize, radius, hpPnts, hpPntsLen, pallet, palletLen);
 
 	pixels[pidx] = color.B;
 	pixels[pidx + 1] = color.G;
@@ -83,5 +93,5 @@ __kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, doubl
 	/*pixels[pidx] = (uchar)(iters * (255.0f / (float)maxIters));
 	pixels[pidx + 1] = (uchar)(iters * (255.0f / (float)maxIters));
 	pixels[pidx + 2] = (uchar)(iters * (255.0f / (float)maxIters));
-	pixels[pidx + 3] = (uchar)(iters * (255.0f / (float)maxIters));*/
+	pixels[pidx + 3] = (uchar)255;*/
 }

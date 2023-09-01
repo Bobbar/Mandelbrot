@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Cloo;
 using System.Drawing;
 using System.Security.Cryptography.Xml;
+using System.Numerics;
 
 namespace Mandelbrot
 {
@@ -21,12 +22,15 @@ namespace Mandelbrot
 
         private ComputeBuffer<byte> _gpuPixels;
         private ComputeBuffer<clColor> _gpuPallet;
+        private ComputeBuffer<PointD> _gpuHPPoints;
 
         private ComputeKernel _computePixels;
 
-        private const int _threadsPerBlock = 32;
+        private const int _threadsPerBlock = 16;//32;
         private int _gpuIndex;
         private int2 _dims;
+
+        private bool _profile = false;
 
         public OpenCLCompute(int gpuIndex, int2 dims)
         {
@@ -46,7 +50,8 @@ namespace Mandelbrot
             var platform = _device.Platform;
 
             _context = new ComputeContext(new[] { _device }, new ComputeContextPropertyList(platform), null, IntPtr.Zero);
-            _queue = new ComputeCommandQueue(_context, _device, ComputeCommandQueueFlags.None);
+            var flags = _profile ? ComputeCommandQueueFlags.Profiling : ComputeCommandQueueFlags.None;
+			_queue = new ComputeCommandQueue(_context, _device, flags);
 
             var kernelPath = $@"{Environment.CurrentDirectory}\OpenCL\OCLKernels.cl";
             string clSource;
@@ -81,7 +86,7 @@ namespace Mandelbrot
             _gpuPixels = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.ReadWrite, len);
         }
 
-        private List<ComputeDevice> GetDevices()
+        public static List<ComputeDevice> GetDevices()
         {
             var devices = new List<ComputeDevice>();
 
@@ -120,8 +125,26 @@ namespace Mandelbrot
             _queue.WriteToBuffer(cvt, _gpuPallet, true, null);
         }
 
-        public void ComputePixels(ref IntPtr pixels, int maxIters, PointD xMinMax, PointD yMinMax, Point fieldSize, int colorScale, float cValue)
+        private void UpdateHPPoints(List<Complex> pnts)
         {
+            var cvt = new PointD[pnts.Count];
+
+            for (int i = 0; i < cvt.Length; i++)
+            {
+                var c = pnts[i];
+                cvt[i].X = c.Real;
+                cvt[i].Y = c.Imaginary;
+            }
+
+            _gpuHPPoints?.Dispose();
+            _gpuHPPoints = new ComputeBuffer<PointD>(_context, ComputeMemoryFlags.ReadOnly, cvt.Length);
+            _queue.WriteToBuffer(cvt, _gpuHPPoints, true, null);
+        }
+
+        public void ComputePixels(ref IntPtr pixels, int maxIters, PointD xMinMax, PointD yMinMax, Point fieldSize, int colorScale, float cValue, List<Complex> hpPoints, double radius)
+        {
+            UpdateHPPoints(hpPoints);
+
             int len = (_dims.X * _dims.Y) * 4;
             int2 padDims = new int2() { X = PadSize(_dims.X), Y = PadSize(_dims.Y) };
 
@@ -135,26 +158,43 @@ namespace Mandelbrot
             _computePixels.SetValueArgument(7, cValue);
             _computePixels.SetMemoryArgument(8, _gpuPallet);
             _computePixels.SetValueArgument(9, (int)_gpuPallet.Count);
+            _computePixels.SetMemoryArgument(10, _gpuHPPoints);
+            _computePixels.SetValueArgument(11, (int)_gpuHPPoints.Count);
+            _computePixels.SetValueArgument(12, radius);
 
-            _queue.Execute(_computePixels, null, new long[] { padDims.X, padDims.Y }, new long[] { _threadsPerBlock, _threadsPerBlock }, null);
+            ComputeEventList evts = null;
 
-            _queue.Read(_gpuPixels, true, 0, len, pixels, null); 
+            if (_profile)
+            {
+				evts = new ComputeEventList();
+                _queue.Finish();
+            }
 
+			_queue.Execute(_computePixels, null, new long[] { padDims.X, padDims.Y }, new long[] { _threadsPerBlock, _threadsPerBlock }, evts);
+
+
+            if (_profile)
+            {
+                _queue.Finish();
+
+                ulong tot = 0;
+                for (int i = 0; i < evts.Count; i++)
+                {
+                    var evt = evts[i];
+                    var elap = evt.FinishTime - evt.StartTime;
+                    tot += elap;
+
+                    //var elapMS = (float)elap / 1000000.0f;
+                    //var idxStr = i.ToString("00");
+                    //Debug.WriteLine("{0} - Elap: {1} ns  {2} ms", idxStr, elap, elapMS);
+                    evt.Dispose();
+                }
+
+                Debug.WriteLine("Tot: {0} ns  {1} ms", tot, (tot / 1000000.0f));
+            }
+
+			_queue.Read(_gpuPixels, true, 0, len, pixels, null); 
             _queue.Finish();
-        }
-
-        private void ReadBuffer(ComputeBuffer<byte> source, ref IntPtr dest, int len)
-        {
-            Cloo.Bindings.CL10.EnqueueReadBuffer(
-                  _queue.Handle,
-                  source.Handle,
-                  true,
-                  new IntPtr(0 * 4),
-                  new IntPtr(len * 4),
-                  dest,
-                  0,
-                  null,
-                  null);
         }
 
         public void Dispose()
@@ -164,6 +204,7 @@ namespace Mandelbrot
             _program?.Dispose();
             _gpuPallet?.Dispose();
             _gpuPixels?.Dispose();
+            _gpuHPPoints?.Dispose();
             _computePixels?.Dispose();
         }
     }

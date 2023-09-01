@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Mandelbrot.Rendering
 {
@@ -74,12 +75,12 @@ namespace Mandelbrot.Rendering
         public static PointF ScalePoint(ScaleDirection direction, PointF point, PointF ratio)
         {
             if (direction == ScaleDirection.ToImage)
-                //return new PointF((int)((point.X) * ratio.X), (int)((point.Y) * ratio.Y));
                 return new PointF(point.X * ratio.X, point.Y * ratio.Y);
-
             else
                 return new PointF(point.X / ratio.X, point.Y / ratio.Y);
 
         }
-    }
+
+		
+	}
 }

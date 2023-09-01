@@ -50,6 +50,9 @@
             this.zoomFactNumeric = new System.Windows.Forms.NumericUpDown();
             this.resetButton = new System.Windows.Forms.Button();
             this.useOCLCheckBox = new System.Windows.Forms.CheckBox();
+            this.prevButton = new System.Windows.Forms.Button();
+            this.oclDeviceCombo = new System.Windows.Forms.ComboBox();
+            this.SaveButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cValueNumeric)).BeginInit();
@@ -67,15 +70,18 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox.BackColor = System.Drawing.Color.Gray;
             this.pictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox.Location = new System.Drawing.Point(183, 12);
+            this.pictureBox.InitialImage = null;
+            this.pictureBox.Location = new System.Drawing.Point(208, 12);
             this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(589, 599);
+            this.pictureBox.Size = new System.Drawing.Size(794, 609);
+            this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
+            this.pictureBox.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox_Paint);
             // 
             // refreshButton
             // 
-            this.refreshButton.Location = new System.Drawing.Point(37, 555);
+            this.refreshButton.Location = new System.Drawing.Point(50, 505);
             this.refreshButton.Name = "refreshButton";
             this.refreshButton.Size = new System.Drawing.Size(87, 29);
             this.refreshButton.TabIndex = 1;
@@ -85,7 +91,7 @@
             // 
             // iterationsNumeric
             // 
-            this.iterationsNumeric.Location = new System.Drawing.Point(37, 325);
+            this.iterationsNumeric.Location = new System.Drawing.Point(46, 336);
             this.iterationsNumeric.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -114,7 +120,7 @@
             0,
             0,
             65536});
-            this.cValueNumeric.Location = new System.Drawing.Point(37, 391);
+            this.cValueNumeric.Location = new System.Drawing.Point(46, 380);
             this.cValueNumeric.Maximum = new decimal(new int[] {
             3000,
             0,
@@ -138,7 +144,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(37, 307);
+            this.label2.Location = new System.Drawing.Point(46, 318);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(82, 15);
             this.label2.TabIndex = 6;
@@ -147,7 +153,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(37, 373);
+            this.label3.Location = new System.Drawing.Point(46, 362);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(51, 15);
             this.label3.TabIndex = 7;
@@ -161,7 +167,7 @@
             0,
             0,
             131072});
-            this.xtMinNumeric.Location = new System.Drawing.Point(37, 142);
+            this.xtMinNumeric.Location = new System.Drawing.Point(45, 111);
             this.xtMinNumeric.Maximum = new decimal(new int[] {
             100,
             0,
@@ -185,7 +191,7 @@
             0,
             0,
             131072});
-            this.xtMaxNumeric.Location = new System.Drawing.Point(97, 142);
+            this.xtMaxNumeric.Location = new System.Drawing.Point(105, 111);
             this.xtMaxNumeric.Maximum = new decimal(new int[] {
             100,
             0,
@@ -204,7 +210,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(38, 124);
+            this.label4.Location = new System.Drawing.Point(46, 93);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(33, 15);
             this.label4.TabIndex = 10;
@@ -213,7 +219,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(85, 124);
+            this.label5.Location = new System.Drawing.Point(93, 93);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(35, 15);
             this.label5.TabIndex = 11;
@@ -222,7 +228,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(14, 144);
+            this.label6.Location = new System.Drawing.Point(22, 113);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(17, 15);
             this.label6.TabIndex = 12;
@@ -236,7 +242,7 @@
             0,
             0,
             131072});
-            this.ytMaxNumeric.Location = new System.Drawing.Point(97, 171);
+            this.ytMaxNumeric.Location = new System.Drawing.Point(105, 140);
             this.ytMaxNumeric.Maximum = new decimal(new int[] {
             100,
             0,
@@ -260,7 +266,7 @@
             0,
             0,
             131072});
-            this.ytMinNumeric.Location = new System.Drawing.Point(38, 171);
+            this.ytMinNumeric.Location = new System.Drawing.Point(46, 140);
             this.ytMinNumeric.Maximum = new decimal(new int[] {
             100,
             0,
@@ -279,7 +285,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(14, 173);
+            this.label7.Location = new System.Drawing.Point(22, 142);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(17, 15);
             this.label7.TabIndex = 15;
@@ -287,7 +293,7 @@
             // 
             // resXTextBox
             // 
-            this.resXTextBox.Location = new System.Drawing.Point(38, 64);
+            this.resXTextBox.Location = new System.Drawing.Point(46, 33);
             this.resXTextBox.Name = "resXTextBox";
             this.resXTextBox.Size = new System.Drawing.Size(47, 23);
             this.resXTextBox.TabIndex = 16;
@@ -295,7 +301,7 @@
             // 
             // resYTextBox
             // 
-            this.resYTextBox.Location = new System.Drawing.Point(96, 64);
+            this.resYTextBox.Location = new System.Drawing.Point(104, 33);
             this.resYTextBox.Name = "resYTextBox";
             this.resYTextBox.Size = new System.Drawing.Size(47, 23);
             this.resYTextBox.TabIndex = 17;
@@ -304,7 +310,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(38, 46);
+            this.label8.Location = new System.Drawing.Point(46, 15);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(91, 15);
             this.label8.TabIndex = 18;
@@ -312,7 +318,7 @@
             // 
             // applyResButton
             // 
-            this.applyResButton.Location = new System.Drawing.Point(54, 93);
+            this.applyResButton.Location = new System.Drawing.Point(62, 62);
             this.applyResButton.Name = "applyResButton";
             this.applyResButton.Size = new System.Drawing.Size(75, 23);
             this.applyResButton.TabIndex = 19;
@@ -323,11 +329,11 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(38, 437);
+            this.label9.Location = new System.Drawing.Point(46, 406);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(39, 15);
+            this.label9.Size = new System.Drawing.Size(86, 15);
             this.label9.TabIndex = 21;
-            this.label9.Text = "Zoom";
+            this.label9.Text = "Zoom Amount";
             // 
             // zoomFactNumeric
             // 
@@ -337,12 +343,17 @@
             0,
             0,
             65536});
-            this.zoomFactNumeric.Location = new System.Drawing.Point(38, 455);
+            this.zoomFactNumeric.Location = new System.Drawing.Point(46, 424);
+            this.zoomFactNumeric.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
             this.zoomFactNumeric.Minimum = new decimal(new int[] {
-            1000,
+            1,
             0,
             0,
-            -2147418112});
+            0});
             this.zoomFactNumeric.Name = "zoomFactNumeric";
             this.zoomFactNumeric.Size = new System.Drawing.Size(120, 23);
             this.zoomFactNumeric.TabIndex = 20;
@@ -350,12 +361,12 @@
             3,
             0,
             0,
-            65536});
+            0});
             this.zoomFactNumeric.ValueChanged += new System.EventHandler(this.zoomFactNumeric_ValueChanged);
             // 
             // resetButton
             // 
-            this.resetButton.Location = new System.Drawing.Point(37, 507);
+            this.resetButton.Location = new System.Drawing.Point(50, 457);
             this.resetButton.Name = "resetButton";
             this.resetButton.Size = new System.Drawing.Size(87, 29);
             this.resetButton.TabIndex = 22;
@@ -366,7 +377,7 @@
             // useOCLCheckBox
             // 
             this.useOCLCheckBox.AutoSize = true;
-            this.useOCLCheckBox.Location = new System.Drawing.Point(51, 592);
+            this.useOCLCheckBox.Location = new System.Drawing.Point(58, 554);
             this.useOCLCheckBox.Name = "useOCLCheckBox";
             this.useOCLCheckBox.Size = new System.Drawing.Size(69, 19);
             this.useOCLCheckBox.TabIndex = 23;
@@ -374,11 +385,43 @@
             this.useOCLCheckBox.UseVisualStyleBackColor = true;
             this.useOCLCheckBox.CheckedChanged += new System.EventHandler(this.useOCLCheckBox_CheckedChanged);
             // 
+            // prevButton
+            // 
+            this.prevButton.Location = new System.Drawing.Point(50, 208);
+            this.prevButton.Name = "prevButton";
+            this.prevButton.Size = new System.Drawing.Size(87, 39);
+            this.prevButton.TabIndex = 25;
+            this.prevButton.Text = "Back";
+            this.prevButton.UseVisualStyleBackColor = true;
+            this.prevButton.Click += new System.EventHandler(this.prevButton_Click);
+            // 
+            // oclDeviceCombo
+            // 
+            this.oclDeviceCombo.FormattingEnabled = true;
+            this.oclDeviceCombo.Location = new System.Drawing.Point(14, 579);
+            this.oclDeviceCombo.Name = "oclDeviceCombo";
+            this.oclDeviceCombo.Size = new System.Drawing.Size(157, 23);
+            this.oclDeviceCombo.TabIndex = 26;
+            this.oclDeviceCombo.SelectionChangeCommitted += new System.EventHandler(this.oclDeviceCombo_SelectionChangeCommitted);
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Location = new System.Drawing.Point(53, 277);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(75, 23);
+            this.SaveButton.TabIndex = 27;
+            this.SaveButton.Text = "Save Image";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 623);
+            this.ClientSize = new System.Drawing.Size(1014, 633);
+            this.Controls.Add(this.SaveButton);
+            this.Controls.Add(this.oclDeviceCombo);
+            this.Controls.Add(this.prevButton);
             this.Controls.Add(this.useOCLCheckBox);
             this.Controls.Add(this.resetButton);
             this.Controls.Add(this.label9);
@@ -401,6 +444,8 @@
             this.Controls.Add(this.iterationsNumeric);
             this.Controls.Add(this.refreshButton);
             this.Controls.Add(this.pictureBox);
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
@@ -440,5 +485,8 @@
         private NumericUpDown zoomFactNumeric;
         private Button resetButton;
         private CheckBox useOCLCheckBox;
-    }
+		private Button prevButton;
+		private ComboBox oclDeviceCombo;
+		private Button SaveButton;
+	}
 }
