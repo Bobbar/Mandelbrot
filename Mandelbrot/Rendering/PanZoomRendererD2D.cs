@@ -18,7 +18,6 @@ namespace Mandelbrot.Rendering
 	{
 		public Bitmap Image => targetImage;
 
-		public event EventHandler<MouseEventArgs> MouseDown;
 
 		private Bitmap targetImage;
 		private D2DDevice device;
@@ -34,6 +33,20 @@ namespace Mandelbrot.Rendering
 		private Size windowSize = new Size();
 		private bool mouseDown = false;
 		private PictureBox pictureBox;
+		private D2DBitmapInterpolationMode interpMode = D2DBitmapInterpolationMode.NearestNeighbor;
+
+		public event EventHandler<MouseEventArgs> MouseDown;
+
+		public bool Smoothing
+		{
+			get { return interpMode == D2DBitmapInterpolationMode.Linear; }
+
+			set
+			{
+				interpMode = value ? D2DBitmapInterpolationMode.Linear : D2DBitmapInterpolationMode.NearestNeighbor;
+				Refresh();
+			}
+		}
 
 		public PanZoomRendererD2D(Bitmap image, PictureBox target)
 		{
@@ -81,7 +94,7 @@ namespace Mandelbrot.Rendering
 			using (var bmpHandle = new BitmapHandle(targetImage))
 			{
 				var imgPtr = bmpHandle.Handle;
-				gfx.DrawGDIBitmap(imgPtr, new D2DRect(panZoomOffset.X, panZoomOffset.Y, targetSize.Width, targetSize.Height), new D2DRect(D2DPoint.Zero, new D2DSize(targetImage.Width * 2, targetImage.Height * 2)), 1f, false, D2DBitmapInterpolationMode.NearestNeighbor);
+				gfx.DrawGDIBitmap(imgPtr, new D2DRect(panZoomOffset.X, panZoomOffset.Y, targetSize.Width, targetSize.Height), new D2DRect(D2DPoint.Zero, new D2DSize(targetImage.Width * 2, targetImage.Height * 2)), 1f, false, interpMode);
 			}
 
 			gfx.EndRender();

@@ -10,7 +10,6 @@ using System.Numerics;
 namespace Mandelbrot
 {
 	// TODO: Save/Load sets?
-	// TODO: Toggle for render interpolation?
 
 	public partial class Form1 : Form
 	{
@@ -554,6 +553,12 @@ namespace Mandelbrot
 		private void PalletButton_Click(object sender, EventArgs e)
 		{
 			ChoosePallet();
+		}
+
+		private void smoothingCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			renderer.Smoothing = smoothingCheckBox.Checked;
+			Refresh();
 		}
 	}
 }

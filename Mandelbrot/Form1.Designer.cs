@@ -55,6 +55,7 @@
             this.SaveButton = new System.Windows.Forms.Button();
             this.d2dControl1 = new unvell.D2DLib.WinForm.D2DControl();
             this.PalletButton = new System.Windows.Forms.Button();
+            this.smoothingCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cValueNumeric)).BeginInit();
@@ -83,9 +84,9 @@
             // 
             // refreshButton
             // 
-            this.refreshButton.Location = new System.Drawing.Point(50, 505);
+            this.refreshButton.Location = new System.Drawing.Point(50, 525);
             this.refreshButton.Name = "refreshButton";
-            this.refreshButton.Size = new System.Drawing.Size(87, 29);
+            this.refreshButton.Size = new System.Drawing.Size(87, 23);
             this.refreshButton.TabIndex = 1;
             this.refreshButton.Text = "Refresh";
             this.refreshButton.UseVisualStyleBackColor = true;
@@ -368,9 +369,9 @@
             // 
             // resetButton
             // 
-            this.resetButton.Location = new System.Drawing.Point(50, 457);
+            this.resetButton.Location = new System.Drawing.Point(50, 496);
             this.resetButton.Name = "resetButton";
-            this.resetButton.Size = new System.Drawing.Size(87, 29);
+            this.resetButton.Size = new System.Drawing.Size(87, 23);
             this.resetButton.TabIndex = 22;
             this.resetButton.Text = "Reset";
             this.resetButton.UseVisualStyleBackColor = true;
@@ -389,7 +390,7 @@
             // 
             // prevButton
             // 
-            this.prevButton.Location = new System.Drawing.Point(50, 169);
+            this.prevButton.Location = new System.Drawing.Point(53, 181);
             this.prevButton.Name = "prevButton";
             this.prevButton.Size = new System.Drawing.Size(87, 39);
             this.prevButton.TabIndex = 25;
@@ -436,11 +437,23 @@
             this.PalletButton.UseVisualStyleBackColor = true;
             this.PalletButton.Click += new System.EventHandler(this.PalletButton_Click);
             // 
+            // smoothingCheckBox
+            // 
+            this.smoothingCheckBox.AutoSize = true;
+            this.smoothingCheckBox.Location = new System.Drawing.Point(54, 453);
+            this.smoothingCheckBox.Name = "smoothingCheckBox";
+            this.smoothingCheckBox.Size = new System.Drawing.Size(85, 19);
+            this.smoothingCheckBox.TabIndex = 30;
+            this.smoothingCheckBox.Text = "Smoothing";
+            this.smoothingCheckBox.UseVisualStyleBackColor = true;
+            this.smoothingCheckBox.CheckedChanged += new System.EventHandler(this.smoothingCheckBox_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1014, 633);
+            this.Controls.Add(this.smoothingCheckBox);
             this.Controls.Add(this.PalletButton);
             this.Controls.Add(this.d2dControl1);
             this.Controls.Add(this.SaveButton);
@@ -514,5 +527,6 @@
 		private Button SaveButton;
 		private unvell.D2DLib.WinForm.D2DControl d2dControl1;
 		private Button PalletButton;
+		private CheckBox smoothingCheckBox;
 	}
 }
