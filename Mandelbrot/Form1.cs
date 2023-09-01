@@ -21,7 +21,7 @@ namespace Mandelbrot
 		private int NUM_THREADS = 4;
 		private int maxIterations = 1000;
 		private float zoomFact = 2.0f;
-		private bool useOCL = true;
+		private bool useOCL = false;
 
 		private PointD center = new PointD();
 		private double radius = 2.0;
@@ -85,14 +85,20 @@ namespace Mandelbrot
 
 		private void EnumOclDevices()
 		{
+			oclDeviceCombo.DataSource = null;
+			oclDeviceCombo.Items.Clear();
+
 			var devices = OpenCLCompute.GetDevices();
 			if (devices.Count == 0)
-				throw new Exception("No OpenCL devices found.");
+			{
+				//throw new Exception("No OpenCL devices found.");
+				MessageBox.Show("No OpenCL devices found.");
+				useOCL = false;
+				return;
+			}
 			else
 				oclDeviceIdx = 0;
 
-			oclDeviceCombo.DataSource = null;
-			oclDeviceCombo.Items.Clear();
 			oclDeviceCombo.ValueMember = "Item1";
 			oclDeviceCombo.DisplayMember = "Item2";
 
@@ -112,8 +118,18 @@ namespace Mandelbrot
 			renderer.MouseDown -= Renderer_MouseDown;
 			renderer.MouseDown += Renderer_MouseDown;
 
-			oclCompute?.Dispose();
-			oclCompute = new OpenCLCompute(oclDeviceIdx, new int2() { X = fieldSize.Width, Y = fieldSize.Height });
+			try
+			{
+				oclCompute?.Dispose();
+				oclCompute = new OpenCLCompute(oclDeviceIdx, new int2() { X = fieldSize.Width, Y = fieldSize.Height });
+				useOCL = true;
+			}
+			catch
+			{
+				useOCL = false;
+				MessageBox.Show("Error initializing OpenCL device.");
+
+			}
 
 			InitPallet();
 		}
@@ -157,10 +173,10 @@ namespace Mandelbrot
 			_prevSets.Clear();
 			_lastSet = new Set(center, radius);
 
-			Refresh();
+			RefreshImage();
 		}
 
-		private unsafe void Refresh()
+		private unsafe void RefreshImage()
 		{
 			const int alphaOffset = 3;
 			var itVals = ItVals();
@@ -318,7 +334,7 @@ namespace Mandelbrot
 			centerYTextBox.Text = center.Y.ToString();
 			radiusTextBox.Text = radius.ToString();
 
-			Refresh();
+			RefreshImage();
 		}
 
 
@@ -444,7 +460,7 @@ namespace Mandelbrot
 						_prevSets.Clear();
 						_lastSet = set;
 
-						Refresh();
+						RefreshImage();
 					}
 				}
 			}
@@ -461,18 +477,18 @@ namespace Mandelbrot
 			}
 
 			InitPallet();
-			Refresh();
+			RefreshImage();
 		}
 
 		private void refreshButton_Click(object sender, EventArgs e)
 		{
-			Refresh();
+			RefreshImage();
 		}
 
 		private void iterationsNumeric_ValueChanged(object sender, EventArgs e)
 		{
 			maxIterations = (int)iterationsNumeric.Value;
-			Refresh();
+			RefreshImage();
 		}
 
 		private void zoomFactNumeric_ValueChanged(object sender, EventArgs e)
@@ -491,7 +507,7 @@ namespace Mandelbrot
 				resYTextBox.Text = fieldSize.Height.ToString();
 
 				Init();
-				Refresh();
+				RefreshImage();
 			}
 		}
 
@@ -529,7 +545,7 @@ namespace Mandelbrot
 
 			_lastSet = prevSet;
 
-			Refresh();
+			RefreshImage();
 		}
 
 		private void pictureBox_Paint(object sender, PaintEventArgs e)
@@ -545,7 +561,7 @@ namespace Mandelbrot
 			{
 				oclDeviceIdx = selected.Item1;
 				Init();
-				Refresh();
+				RefreshImage();
 			}
 		}
 
@@ -562,7 +578,7 @@ namespace Mandelbrot
 		private void smoothingCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			renderer.Smoothing = smoothingCheckBox.Checked;
-			Refresh();
+			RefreshImage();
 		}
 
 		private void loadSetButton_Click(object sender, EventArgs e)

@@ -14,7 +14,6 @@ namespace Mandelbrot
 {
     public class OpenCLCompute : IDisposable
     {
-
         private ComputeContext _context;
         private ComputeCommandQueue _queue;
         private ComputeDevice _device;
