@@ -17,21 +17,24 @@ namespace Mandelbrot
         }
     }
 
-    public struct clColor
-    {
-        public byte R;
-        public byte G;
-        public byte B;
-    }
+	public struct clColor
+	{
+		public byte B;
+		public byte G;
+		public byte R;
+		public byte A;
 
-    public struct Rule
-    {
-        public int B;
-        public int S;
-        public int C;
-    }
+        public clColor(Color color)
+        {
+            this.B = color.B;
+            this.G = color.G;
+            this.R = color.R;
+            this.A = color.A;
+        }
 
-    public struct PointD
+	}
+
+	public struct PointD
     {
         public double X;
         public double Y;

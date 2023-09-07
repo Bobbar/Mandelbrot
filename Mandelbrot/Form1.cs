@@ -31,6 +31,7 @@ namespace Mandelbrot
 
 		private List<Color> pallet = new List<Color>();
 		private List<Color> palletSource = new List<Color>();
+		private double colorSteps = 0.01;
 
 		private readonly List<Color> defaultPalletSource = new List<Color>()
 		{
@@ -70,6 +71,8 @@ namespace Mandelbrot
 
 			resXTextBox.Text = fieldSize.Width.ToString();
 			resYTextBox.Text = fieldSize.Height.ToString();
+
+			colorStepsNumeric.Value = (decimal)colorSteps;
 
 			useOCLCheckBox.Checked = useOCL;
 
@@ -144,7 +147,7 @@ namespace Mandelbrot
 			{
 				var cur = cols[i];
 				var next = (i + 1 == cols.Count) ? cols.First() : cols[i + 1];
-				for (double d = 0.0; d < 1.0; d += 0.01)
+				for (double d = 0.0; d < 1.0; d += colorSteps)
 				{
 					pallet.Add(Interp(cur, next, d));
 				}
@@ -179,10 +182,9 @@ namespace Mandelbrot
 		private unsafe void RefreshImage()
 		{
 			const int alphaOffset = 3;
-			var itVals = ItVals();
 
 			this.Text = "Mandelbrot (Processing...)";
-			
+
 			// Write directly to the bitmap.
 			using (var bmpLock = new BitmapLock(renderer.Image))
 			{
@@ -191,10 +193,11 @@ namespace Mandelbrot
 				if (useOCL)
 				{
 					IntPtr pxls = data.Scan0;
-					oclCompute.ComputePixels(ref pxls, maxIterations, new Point(fieldSize.Width, fieldSize.Height), itVals, radius);
+					oclCompute.ComputePixels(ref pxls, maxIterations, new Point(fieldSize.Width, fieldSize.Height), center, radius);
 				}
 				else
 				{
+					var itVals = ItVals();
 					byte* pixels = (byte*)data.Scan0;
 					ParallelHelpers.ParallelForSlim(fieldSize.Width, NUM_THREADS, (start, len) =>
 					{
@@ -248,7 +251,7 @@ namespace Mandelbrot
 				zn_size = (xVals[iters] * 0.5 + dn).Norm();
 
 
-			} while (zn_size < 500 && iters < max);
+			} while (zn_size < 256 && iters < max);
 
 
 			if (iters == max)
@@ -261,24 +264,20 @@ namespace Mandelbrot
 
 		private Color GetColor(double zn_size, int iters)
 		{
-			//if (iters >= maxIterations)
-			//    return Color.Black;
-			//else
-			//{
 			double nu = iters - Math.Log2(Math.Log2(zn_size));
 			int i = (int)(nu * 10.0) % pallet.Count;
 
-			if (i < 0)
-				return Color.Black;
+	        i = Math.Clamp(i,0, pallet.Count);
 
 			return pallet[i];
-			//}
-
 		}
 
+		
 		private List<Complex> ItVals()
 		{
 			var v = new List<Complex>();
+
+			const int max = 1024;
 
 			double xn_r = center.X;
 			double xn_i = center.Y;
@@ -292,7 +291,7 @@ namespace Mandelbrot
 
 				v.Add(c);
 
-				if (re > 1024 || im > 1024 || re < -1024 || im < -1024)
+				if (re > max || im > max || re < -max || im < -max)
 					return v;
 
 				xn_r = xn_r * xn_r - xn_i * xn_i + center.X;
@@ -302,11 +301,15 @@ namespace Mandelbrot
 			return v;
 		}
 
-
 		private double GetRelPoint(double pixel, float length, PointD set)
 		{
 			return set.X + (pixel / (double)length) * (set.Y - set.X);
 		}
+
+
+		private PointD _xRange = new PointD();
+		private PointD _yRange = new PointD();
+
 
 		private void UpdateSets(Point loc, bool findNearest = true)
 		{
@@ -560,6 +563,7 @@ namespace Mandelbrot
 			if (selected != null)
 			{
 				oclDeviceIdx = selected.Item1;
+
 				Init();
 				RefreshImage();
 			}
@@ -607,6 +611,13 @@ namespace Mandelbrot
 		{
 			if (double.TryParse(radiusTextBox.Text.Trim(), out var r))
 				radius = r;
+		}
+
+		private void colorStepsNumeric_ValueChanged(object sender, EventArgs e)
+		{
+			colorSteps = (double)colorStepsNumeric.Value;
+			InitPallet();
+			//RefreshImage();
 		}
 	}
 }
