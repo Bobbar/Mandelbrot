@@ -1,13 +1,14 @@
 ﻿
 typedef struct
 {
-	uchar R;
-	uchar G;
 	uchar B;
+	uchar G;
+	uchar R;
+	uchar A;
 
 } clColor;
 
-constant clColor BLACK = { 0, 0, 0 };
+constant clColor BLACK = { 0, 0, 0, 255 };
 
 //double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax);
 //int GetPixel(int px, int py, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, float cValue);
@@ -25,9 +26,10 @@ double Norm(double2 c)
 	return c.x * c.x + c.y * c.y;
 }
 
-double2 Mul(double2 a, double2 b) 
+double2 Mul(double2 a, double2 b)
 {
 	return (double2)(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+
 }
 
 clColor GetColor(double zn_size, int iters, global clColor* pallet, int palletLen)
@@ -35,8 +37,7 @@ clColor GetColor(double zn_size, int iters, global clColor* pallet, int palletLe
 	double nu = iters - log2(log2(zn_size));
 	int i = (int)(nu * 10.0) % palletLen;
 
-	if (i < 0)
-		return BLACK;
+	i = clamp(i, 0, palletLen);
 
 	return pallet[i];
 }
@@ -60,7 +61,7 @@ clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* 
 		dn += d0;
 		iters++;
 		zn_size = Norm(hpPnts[iters] * 0.5 + dn);
-
+		
 	} while (zn_size < 256 && iters < max);
 
 	if (iters == max)
@@ -70,8 +71,7 @@ clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* 
 
 }
 
-
-__kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, int2 fieldSize, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
+__kernel void ComputePixels(global clColor* pixels, int2 dims, int maxIters, int2 fieldSize, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -80,18 +80,8 @@ __kernel void ComputePixels(global uchar* pixels, int2 dims, int maxIters, int2 
 		return;
 
 	int idx = y * dims.x + x;
-	int pidx = idx * 4;
 
 	clColor color = GetPixel(x, y, fieldSize, radius, hpPnts, hpPntsLen, pallet, palletLen);
 
-	pixels[pidx] = color.B;
-	pixels[pidx + 1] = color.G;
-	pixels[pidx + 2] = color.R;
-	pixels[pidx + 3] = (uchar)255;
-
-	// B&W
-	/*pixels[pidx] = (uchar)(iters * (255.0f / (float)maxIters));
-	pixels[pidx + 1] = (uchar)(iters * (255.0f / (float)maxIters));
-	pixels[pidx + 2] = (uchar)(iters * (255.0f / (float)maxIters));
-	pixels[pidx + 3] = (uchar)255;*/
+	pixels[idx] = color;
 }

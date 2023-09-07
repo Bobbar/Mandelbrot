@@ -53,9 +53,12 @@
             this.centerYTextBox = new System.Windows.Forms.TextBox();
             this.radiusTextBox = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
+            this.colorStepsNumeric = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.zoomFactNumeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.colorStepsNumeric)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox
@@ -174,11 +177,6 @@
             0,
             0,
             0});
-            this.zoomFactNumeric.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.zoomFactNumeric.Name = "zoomFactNumeric";
             this.zoomFactNumeric.Size = new System.Drawing.Size(120, 23);
             this.zoomFactNumeric.TabIndex = 20;
@@ -231,7 +229,7 @@
             // 
             // SaveButton
             // 
-            this.SaveButton.Location = new System.Drawing.Point(60, 333);
+            this.SaveButton.Location = new System.Drawing.Point(51, 707);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(75, 23);
             this.SaveButton.TabIndex = 27;
@@ -331,11 +329,51 @@
             this.label11.TabIndex = 37;
             this.label11.Text = "Radius:";
             // 
+            // colorStepsNumeric
+            // 
+            this.colorStepsNumeric.DecimalPlaces = 4;
+            this.colorStepsNumeric.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.colorStepsNumeric.Location = new System.Drawing.Point(89, 333);
+            this.colorStepsNumeric.Maximum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            this.colorStepsNumeric.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            262144});
+            this.colorStepsNumeric.Name = "colorStepsNumeric";
+            this.colorStepsNumeric.Size = new System.Drawing.Size(63, 23);
+            this.colorStepsNumeric.TabIndex = 39;
+            this.colorStepsNumeric.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.colorStepsNumeric.ValueChanged += new System.EventHandler(this.colorStepsNumeric_ValueChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(13, 335);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(70, 15);
+            this.label3.TabIndex = 40;
+            this.label3.Text = "Color Steps:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1014, 742);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.colorStepsNumeric);
             this.Controls.Add(this.radiusTextBox);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.centerYTextBox);
@@ -369,6 +407,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.zoomFactNumeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.colorStepsNumeric)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -401,5 +440,7 @@
 		private TextBox centerYTextBox;
 		private TextBox radiusTextBox;
 		private Label label11;
+		private NumericUpDown colorStepsNumeric;
+		private Label label3;
 	}
 }
