@@ -11,7 +11,20 @@
 
   <ItemGroup>
     <PackageReference Include="Cloo.clSharp" Version="1.0.1" />
-    <PackageReference Include="unvell.D2DLib-x64" Version="1.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="d2dlibexport">
+      <HintPath>d2dlibexport.dll</HintPath>
+    </Reference>
+    <Reference Include="d2dwinform">
+      <HintPath>d2dwinform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <using Include="System.Numerics.Vector2" Alias="D2DPoint" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="d2dlib64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenCL\OCLKernels.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

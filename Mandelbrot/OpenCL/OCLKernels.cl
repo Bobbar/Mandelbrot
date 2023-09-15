@@ -10,10 +10,6 @@ typedef struct
 
 constant clColor BLACK = { 0, 0, 0, 255 };
 
-//double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax);
-//int GetPixel(int px, int py, int maxIters, double2 xMinMax, double2 yMinMax, int2 fieldSize, float cValue);
-//clColor GetColor(float maxValue, float value, global clColor* pallet, int palletLen);
-
 
 double Scale(double m, double Tmin, double Tmax, double Rmin, double Rmax)
 {
@@ -32,7 +28,7 @@ double2 Mul(double2 a, double2 b)
 
 }
 
-clColor GetColor(double zn_size, int iters, global clColor* pallet, int palletLen)
+clColor GetColor(double zn_size, int iters, const global clColor* pallet, int palletLen)
 {
 	double nu = iters - log2(log2(zn_size));
 	int i = (int)(nu * 10.0) % palletLen;
@@ -42,7 +38,7 @@ clColor GetColor(double zn_size, int iters, global clColor* pallet, int palletLe
 	return pallet[i];
 }
 
-clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* hpPnts, int hpPntsLen, global clColor* pallet, int palletLen)
+clColor GetPixel(int px, int py, int2 fieldSize, double radius, const global double2* hpPnts, int hpPntsLen, const global clColor* pallet, int palletLen)
 {
 	double x0 = radius * (2.0 * (double)px - (double)fieldSize.x) / (double)fieldSize.x;
 	double y0 = -radius * (2.0 * (double)py - (double)fieldSize.y) / (double)fieldSize.x;
@@ -61,7 +57,7 @@ clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* 
 		dn += d0;
 		iters++;
 		zn_size = Norm(hpPnts[iters] * 0.5 + dn);
-		
+
 	} while (zn_size < 256 && iters < max);
 
 	if (iters == max)
@@ -71,7 +67,7 @@ clColor GetPixel(int px, int py, int2 fieldSize, double radius, global double2* 
 
 }
 
-__kernel void ComputePixels(global clColor* pixels, int2 dims, int maxIters, int2 fieldSize, global clColor* pallet, int palletLen, global double2* hpPnts, int hpPntsLen, double radius)
+__kernel void ComputePixels(global clColor* pixels, int2 dims, const global clColor* pallet, int palletLen, const global double2* hpPnts, int hpPntsLen, double radius)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -81,7 +77,8 @@ __kernel void ComputePixels(global clColor* pixels, int2 dims, int maxIters, int
 
 	int idx = y * dims.x + x;
 
-	clColor color = GetPixel(x, y, fieldSize, radius, hpPnts, hpPntsLen, pallet, palletLen);
+	clColor color = GetPixel(x, y, dims, radius, hpPnts, hpPntsLen, pallet, palletLen);
 
 	pixels[idx] = color;
 }
+

@@ -16,12 +16,10 @@ namespace Mandelbrot.Rendering
 {
 	public sealed class PanZoomRendererD2D : IDisposable
 	{
-		public Bitmap Image => targetImage;
-
-
-		private Bitmap targetImage;
+        private Bitmap targetImage;
 		private D2DDevice device;
 		private D2DGraphics gfx;
+		private D2DBitmap buffer;
 
 		private float currentScale = 1f;
 		private const float scaleChangeMulti = 0.1f;
@@ -35,8 +33,6 @@ namespace Mandelbrot.Rendering
 		private PictureBox pictureBox;
 		private D2DBitmapInterpolationMode interpMode = D2DBitmapInterpolationMode.NearestNeighbor;
 
-		public event EventHandler<MouseEventArgs> MouseDown;
-
 		public bool Smoothing
 		{
 			get { return interpMode == D2DBitmapInterpolationMode.Linear; }
@@ -48,7 +44,10 @@ namespace Mandelbrot.Rendering
 			}
 		}
 
-		public PanZoomRendererD2D(Bitmap image, PictureBox target)
+        public Bitmap Image => targetImage;
+        public event EventHandler<MouseEventArgs> MouseDown;
+
+        public PanZoomRendererD2D(Bitmap image, PictureBox target)
 		{
 			targetImage = image;
 			pictureBox = target;
@@ -79,10 +78,19 @@ namespace Mandelbrot.Rendering
 			pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
 
 			device.Resize();
-		}
 
+			UpdateBuffer();
+        }
 
-		public void Refresh()
+		public void UpdateBuffer()
+		{
+			buffer?.Dispose();
+			buffer = device.CreateBitmapFromGDIBitmap(targetImage);
+
+			Refresh();
+        }
+
+        public void Refresh()
 		{
 			gfx.BeginRender(D2DColor.FromGDIColor(pictureBox.BackColor));
 
@@ -90,12 +98,10 @@ namespace Mandelbrot.Rendering
 			gfx.ScaleTransform(currentScale, currentScale);
 
 			var panZoomOffset = viewPortOffset.Add(scaleOffset);
+			var srcRect = new D2DRect(D2DPoint.Zero, new D2DSize(targetImage.Width * 2, targetImage.Height * 2));
+			var destRect = new D2DRect(panZoomOffset.X, panZoomOffset.Y, targetSize.Width, targetSize.Height);
 
-			using (var bmpHandle = new BitmapHandle(targetImage))
-			{
-				var imgPtr = bmpHandle.Handle;
-				gfx.DrawGDIBitmap(imgPtr, new D2DRect(panZoomOffset.X, panZoomOffset.Y, targetSize.Width, targetSize.Height), new D2DRect(D2DPoint.Zero, new D2DSize(targetImage.Width * 2, targetImage.Height * 2)), 1f, false, interpMode);
-			}
+			gfx.DrawBitmap(buffer, destRect, srcRect, 1f, interpMode);
 
 			gfx.EndRender();
 		}
@@ -248,6 +254,7 @@ namespace Mandelbrot.Rendering
 
 
 			device?.Dispose();
+			buffer?.Dispose();
 		}
 	}
 }
