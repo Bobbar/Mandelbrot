@@ -65,9 +65,13 @@
             // colorView
             // 
             this.colorView.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.colorView.FullRowSelect = true;
+            this.colorView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.colorView.HideSelection = true;
             this.colorView.Location = new System.Drawing.Point(6, 22);
+            this.colorView.MultiSelect = false;
             this.colorView.Name = "colorView";
+            this.colorView.ShowGroups = false;
             this.colorView.Size = new System.Drawing.Size(227, 328);
             this.colorView.TabIndex = 7;
             this.colorView.UseCompatibleStateImageBehavior = false;

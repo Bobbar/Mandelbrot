@@ -22,27 +22,27 @@ namespace Mandelbrot
 
 		private ComputeBuffer<clColor> _gpuPixels;
 		private ComputeBuffer<clColor> _gpuPallet;
-		private ComputeBuffer<PointD> _gpuHPPoints;
+        private ComputeBuffer<Complex> _gpuHPPoints;
 
-		private ComputeKernel _computePixels;
+        private ComputeKernel _computePixels;
 		private ComputeEventList _evts = null;
 
 		private const int _threadsPerBlock = 8;//32;
 		private int _gpuIndex;
-		private int2 _dims;
+        private Size _dims;
 
-		private bool _profile = false;
+        private bool _profile = false;
 
-		public OpenCLCompute(int gpuIndex, int2 dims)
-		{
-			_gpuIndex = gpuIndex;
-			_dims = dims;
+        public OpenCLCompute(int gpuIndex, Size dims)
+        {
+            _gpuIndex = gpuIndex;
+            _dims = dims;
 
-			Init();
-			InitBuffers(dims);
-		}
+            Init();
+            InitBuffers(dims);
+        }
 
-		private void Init()
+        private void Init()
 		{
 			var devices = GetDevices();
 
@@ -83,18 +83,16 @@ namespace Mandelbrot
 			_computePixels = _program.CreateKernel("ComputePixels");
 		}
 
-		private void InitBuffers(int2 dims)
-		{
-			int len = (dims.X * dims.Y);
+        private void InitBuffers(Size dims)
+        {
+            int len = (dims.Width * dims.Height);
 
-			_gpuPixels = new ComputeBuffer<clColor>(_context, ComputeMemoryFlags.ReadWrite, len);
-			_gpuPallet = new ComputeBuffer<clColor>(_context, ComputeMemoryFlags.ReadOnly, 1);
-			_gpuHPPoints = new ComputeBuffer<PointD>(_context, ComputeMemoryFlags.ReadOnly, 1);
+            _gpuPixels = new ComputeBuffer<clColor>(_context, ComputeMemoryFlags.ReadWrite, len);
+            _gpuPallet = new ComputeBuffer<clColor>(_context, ComputeMemoryFlags.ReadOnly, 1);
+            _gpuHPPoints = new ComputeBuffer<Complex>(_context, ComputeMemoryFlags.ReadOnly, 1);
+        }
 
-
-		}
-
-		public static List<ComputeDevice> GetDevices()
+        public static List<ComputeDevice> GetDevices()
 		{
 			var devices = new List<ComputeDevice>();
 
@@ -137,69 +135,39 @@ namespace Mandelbrot
 			_queue.WriteToBuffer(cvt, _gpuPallet, true, null);
 		}
 
+        private void UpdateHPPoints(List<Complex> pnts)
+        {
+            if (_gpuHPPoints.Count != pnts.Count)
+            {
+                _gpuHPPoints?.Dispose();
+                _gpuHPPoints = new ComputeBuffer<Complex>(_context, ComputeMemoryFlags.ReadOnly, pnts.Count);
+            }
 
-		private void UpdateHPPoints(List<PointD> pnts)
-		{
-			if (_gpuHPPoints.Count != pnts.Count)
-			{
-				_gpuHPPoints?.Dispose();
-				_gpuHPPoints = new ComputeBuffer<PointD>(_context, ComputeMemoryFlags.ReadOnly, pnts.Count);
-			}
+            _queue.WriteToBuffer(pnts.ToArray(), _gpuHPPoints, true, _evts);
+        }
 
-			_queue.WriteToBuffer(pnts.ToArray(), _gpuHPPoints, true, _evts);
-		}
-
-		private List<PointD> GetHPPoints(PointD center, int maxIterations)
-		{
-			var v = new List<PointD>();
-
-			double xn_r = center.X;
-			double xn_i = center.Y;
-
-			for (int i = 0; i != maxIterations; i++)
-			{
-				double re = xn_r + xn_r;
-				double im = xn_i + xn_i;
-
-				var c = new PointD(re, im);
-
-				v.Add(c);
-
-				if (re > 1024 || im > 1024 || re < -1024 || im < -1024)
-					return v;
-
-				xn_r = xn_r * xn_r - xn_i * xn_i + center.X;
-				xn_i = re * xn_i + center.Y;
-			}
-
-			return v;
-		}
-
-		public void ComputePixels(ref IntPtr pixels, int maxIters, Point fieldSize, PointD center, double radius)
+        public void ComputePixels(ref IntPtr pixels, List<Complex> itVals, double radius, List<Color> pallet)
 		{
 			if (_profile)
 				_evts = new ComputeEventList();
 
-			var hpPoints = GetHPPoints(center, maxIters);
-			UpdateHPPoints(hpPoints);
+			UpdatePallet(pallet);
+			UpdateHPPoints(itVals);
 
-			int len = (_dims.X * _dims.Y);
-			int2 padDims = new int2() { X = PadSize(_dims.X), Y = PadSize(_dims.Y) };
+            int len = (_dims.Width * _dims.Height);
 
-			int argI = 0;
+            int argI = 0;
 			_computePixels.SetMemoryArgument(argI++, _gpuPixels);
 			_computePixels.SetValueArgument(argI++, _dims);
-			_computePixels.SetValueArgument(argI++, maxIters);
-			_computePixels.SetValueArgument(argI++, fieldSize);
 			_computePixels.SetMemoryArgument(argI++, _gpuPallet);
 			_computePixels.SetValueArgument(argI++, (int)_gpuPallet.Count);
 			_computePixels.SetMemoryArgument(argI++, _gpuHPPoints);
 			_computePixels.SetValueArgument(argI++, (int)_gpuHPPoints.Count);
 			_computePixels.SetValueArgument(argI++, radius);
 
-			_queue.Execute(_computePixels, null, new long[] { padDims.X, padDims.Y }, new long[] { _threadsPerBlock, _threadsPerBlock }, _evts);
+            _queue.Execute(_computePixels, null, new long[] { _dims.Width, _dims.Height }, new long[] { _threadsPerBlock, _threadsPerBlock }, _evts);
 
-			_queue.Read(_gpuPixels, true, 0, len, pixels, _evts);
+            _queue.Read(_gpuPixels, true, 0, len, pixels, _evts);
 
 			if (_profile)
 			{
