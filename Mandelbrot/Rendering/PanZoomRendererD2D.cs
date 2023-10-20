@@ -85,8 +85,8 @@ namespace Mandelbrot.Rendering
 		public void UpdateBuffer()
 		{
 			buffer?.Dispose();
-			buffer = device.CreateBitmapFromGDIBitmap(targetImage);
-
+            buffer = device.CreateBitmapFromGDIBitmap(targetImage);
+			
 			Refresh();
         }
 
@@ -98,12 +98,10 @@ namespace Mandelbrot.Rendering
 			gfx.ScaleTransform(currentScale, currentScale);
 
 			var panZoomOffset = viewPortOffset.Add(scaleOffset);
-			var srcRect = new D2DRect(D2DPoint.Zero, new D2DSize(targetImage.Width * 2, targetImage.Height * 2));
 			var destRect = new D2DRect(panZoomOffset.X, panZoomOffset.Y, targetSize.Width, targetSize.Height);
+            gfx.DrawBitmap(buffer, destRect, 1f, interpMode);
 
-			gfx.DrawBitmap(buffer, destRect, srcRect, 1f, interpMode);
-
-			gfx.EndRender();
+            gfx.EndRender();
 		}
 
 		private PointF PointToScreen(PointF point)
