@@ -11,136 +11,131 @@ using System.Windows.Forms.VisualStyles;
 
 namespace Mandelbrot
 {
-	public partial class ChoosePalletForm : Form
-	{
-		public List<Color> PalletSource;
+    public partial class ChoosePalletForm : Form
+    {
+        public List<Color> PalletSource { get; private set; }
 
-		private readonly List<Color> _defaultPallet;
-		private ListViewItem _selectedColor = null;
+        private readonly List<Color> _defaultPallet;
+        private ListViewItem? _selectedColor = null;
+        private static ColorDialog _colorPicker = new ColorDialog();
 
-		public ChoosePalletForm()
-		{
-			InitializeComponent();
-		}
+        public ChoosePalletForm()
+        {
+            InitializeComponent();
+        }
 
-		public ChoosePalletForm(List<Color> colors, List<Color> defaultColors)
-		{
-			PalletSource = colors;
-			InitializeComponent();
+        public ChoosePalletForm(List<Color> colors, List<Color> defaultColors)
+        {
+            PalletSource = colors;
+            _defaultPallet = defaultColors;
 
-			InitButtons();
-			_defaultPallet = defaultColors;
-		}
+            InitializeComponent();
+            InitButtons();
+        }
 
-		private void InitButtons()
-		{
-			colorView.Items.Clear();
+        private void InitButtons()
+        {
+            colorView.Items.Clear();
 
-			for (int i = 0; i < PalletSource.Count; i++)
-			{
-				var color = PalletSource[i];
-				var item = new ListViewItem($"Color {i + 1}") { BackColor = color, ForeColor = Color.LightGray, Tag = i };
-				colorView.Items.Add(item);
-			}
-		}
+            for (int i = 0; i < PalletSource.Count; i++)
+            {
+                var color = PalletSource[i];
+                var item = new ListViewItem($"Color {i + 1}") { BackColor = color, ForeColor = Color.LightGray, Tag = i };
+                colorView.Items.Add(item);
+            }
+        }
 
-		private void OKButton_Click(object sender, EventArgs e)
-		{
-			this.DialogResult = DialogResult.OK;
-		}
+        private void OKButton_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+        }
 
-		private void CancelButton_Click(object sender, EventArgs e)
-		{
-			this.DialogResult = DialogResult.Cancel;
-		}
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
 
-		private void defaultButton_Click(object sender, EventArgs e)
-		{
-			PalletSource.Clear();
-			PalletSource = new List<Color>(_defaultPallet);
-			InitButtons();
-		}
+        private void defaultButton_Click(object sender, EventArgs e)
+        {
+            PalletSource.Clear();
+            PalletSource = new List<Color>(_defaultPallet);
+            InitButtons();
+        }
 
-		private void addButton_Click(object sender, EventArgs e)
-		{
-			using (var dlg = new ColorDialog())
-			{
-				if (dlg.ShowDialog() == DialogResult.OK)
-				{
-					PalletSource.Add(dlg.Color);
-					InitButtons();
-				}
-			}
-		}
+        private void addButton_Click(object sender, EventArgs e)
+        {
+            if (_colorPicker.ShowDialog() == DialogResult.OK)
+            {
+                PalletSource.Add(_colorPicker.Color);
+                InitButtons();
+            }
+        }
 
-		private void colorView_ItemActivate(object sender, EventArgs e)
-		{
-			using (var dlg = new ColorDialog())
-			{
-				dlg.Color = _selectedColor.BackColor;
-				var idx = _selectedColor.Index;
+        private void colorView_ItemActivate(object sender, EventArgs e)
+        {
+            _colorPicker.Color = _selectedColor == null ? Color.White : _selectedColor.BackColor;
+            var idx = _selectedColor.Index;
 
-				if (dlg.ShowDialog() == DialogResult.OK)
-				{
-					PalletSource[idx] = dlg.Color;
-					_selectedColor.BackColor = dlg.Color;
-				}
-			}
-		}
+            if (_colorPicker.ShowDialog() == DialogResult.OK)
+            {
+                PalletSource[idx] = _colorPicker.Color;
+                _selectedColor.BackColor = _colorPicker.Color;
+            }
+        }
 
-		private void colorView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-		{
-			_selectedColor = e.Item;
-		}
+        private void colorView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            _selectedColor = e.Item;
+        }
 
-		private void moveUpButton_Click(object sender, EventArgs e)
-		{
-			if (_selectedColor != null)
-			{
-				var curIdx = _selectedColor.Index;
-				var newIdx = curIdx - 1;
+        private void moveUpButton_Click(object sender, EventArgs e)
+        {
+            if (_selectedColor != null)
+            {
+                var curIdx = _selectedColor.Index;
+                var newIdx = curIdx - 1;
 
-				if (newIdx < 0)
-					return;
+                if (newIdx < 0)
+                    return;
 
-				var tmp = PalletSource[curIdx];
-				PalletSource[curIdx] = PalletSource[newIdx];
-				PalletSource[newIdx] = tmp;
+                var tmp = PalletSource[curIdx];
+                PalletSource[curIdx] = PalletSource[newIdx];
+                PalletSource[newIdx] = tmp;
 
-				_selectedColor = null;
-			}
+                _selectedColor = null;
+            }
 
-			InitButtons();
-		}
+            InitButtons();
+        }
 
-		private void moveDownButton_Click(object sender, EventArgs e)
-		{
-			if (_selectedColor != null)
-			{
-				var curIdx = _selectedColor.Index;
-				var newIdx = curIdx + 1;
+        private void moveDownButton_Click(object sender, EventArgs e)
+        {
+            if (_selectedColor != null)
+            {
+                var curIdx = _selectedColor.Index;
+                var newIdx = curIdx + 1;
 
-				if (newIdx > PalletSource.Count)
-					return;
+                if (newIdx > PalletSource.Count)
+                    return;
 
-				var tmp = PalletSource[curIdx];
-				PalletSource[curIdx] = PalletSource[newIdx];
-				PalletSource[newIdx] = tmp;
+                var tmp = PalletSource[curIdx];
+                PalletSource[curIdx] = PalletSource[newIdx];
+                PalletSource[newIdx] = tmp;
 
-				_selectedColor = null;
-			}
+                _selectedColor = null;
+            }
 
-			InitButtons();
-		}
+            InitButtons();
+        }
 
-		private void deleteButton_Click(object sender, EventArgs e)
-		{
-			if (_selectedColor == null) 
-				return;
+        private void deleteButton_Click(object sender, EventArgs e)
+        {
+            if (_selectedColor == null)
+                return;
 
-			PalletSource.RemoveAt(_selectedColor.Index);
+            PalletSource.RemoveAt(_selectedColor.Index);
 
-			InitButtons();
-		}
-	}
+            InitButtons();
+        }
+    }
 }
