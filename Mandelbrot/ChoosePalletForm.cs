@@ -33,7 +33,7 @@ namespace Mandelbrot
             InitButtons();
         }
 
-        private void InitButtons()
+        private void InitButtons(int selectedIdx = 0)
         {
             colorView.Items.Clear();
 
@@ -43,6 +43,8 @@ namespace Mandelbrot
                 var item = new ListViewItem($"Color {i + 1}") { BackColor = color, ForeColor = Color.LightGray, Tag = i };
                 colorView.Items.Add(item);
             }
+
+            colorView.Items[selectedIdx].Selected = true;
         }
 
         private void OKButton_Click(object sender, EventArgs e)
@@ -103,9 +105,9 @@ namespace Mandelbrot
                 PalletSource[newIdx] = tmp;
 
                 _selectedColor = null;
-            }
 
-            InitButtons();
+                InitButtons(newIdx);
+            }
         }
 
         private void moveDownButton_Click(object sender, EventArgs e)
@@ -115,7 +117,7 @@ namespace Mandelbrot
                 var curIdx = _selectedColor.Index;
                 var newIdx = curIdx + 1;
 
-                if (newIdx > PalletSource.Count)
+                if (newIdx >= PalletSource.Count)
                     return;
 
                 var tmp = PalletSource[curIdx];
@@ -123,9 +125,9 @@ namespace Mandelbrot
                 PalletSource[newIdx] = tmp;
 
                 _selectedColor = null;
-            }
 
-            InitButtons();
+                InitButtons(newIdx);
+            }
         }
 
         private void deleteButton_Click(object sender, EventArgs e)
