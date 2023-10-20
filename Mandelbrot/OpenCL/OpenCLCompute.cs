@@ -126,13 +126,13 @@ namespace Mandelbrot
 				cvt[i] = new clColor(c);
 			}
 
-			if (_gpuPallet.Count != cvt.Length)
+            if (_gpuPallet.Count != cvt.Length)
 			{
 				_gpuPallet?.Dispose();
 				_gpuPallet = new ComputeBuffer<clColor>(_context, ComputeMemoryFlags.ReadOnly, cvt.Length);
 			}
 
-			_queue.WriteToBuffer(cvt, _gpuPallet, true, null);
+			_queue.WriteToBuffer(cvt, _gpuPallet, false, _evts);
 		}
 
         private void UpdateHPPoints(List<Complex> pnts)
@@ -143,7 +143,7 @@ namespace Mandelbrot
                 _gpuHPPoints = new ComputeBuffer<Complex>(_context, ComputeMemoryFlags.ReadOnly, pnts.Count);
             }
 
-            _queue.WriteToBuffer(pnts.ToArray(), _gpuHPPoints, true, _evts);
+            _queue.WriteToBuffer(pnts.ToArray(), _gpuHPPoints, false, _evts);
         }
 
         public void ComputePixels(ref IntPtr pixels, List<Complex> itVals, double radius, List<Color> pallet)
@@ -155,6 +155,7 @@ namespace Mandelbrot
 			UpdateHPPoints(itVals);
 
             int len = (_dims.Width * _dims.Height);
+            int2 padDims = new int2() { X = PadSize(_dims.Width), Y = PadSize(_dims.Height) };
 
             int argI = 0;
 			_computePixels.SetMemoryArgument(argI++, _gpuPixels);
@@ -165,9 +166,9 @@ namespace Mandelbrot
 			_computePixels.SetValueArgument(argI++, (int)_gpuHPPoints.Count);
 			_computePixels.SetValueArgument(argI++, radius);
 
-            _queue.Execute(_computePixels, null, new long[] { _dims.Width, _dims.Height }, new long[] { _threadsPerBlock, _threadsPerBlock }, _evts);
+            _queue.Execute(_computePixels, null, new long[] { padDims.X, padDims.Y }, new long[] { _threadsPerBlock, _threadsPerBlock }, _evts);
 
-            _queue.Read(_gpuPixels, true, 0, len, pixels, _evts);
+            _queue.Read(_gpuPixels, false, 0, len, pixels, _evts);
 
 			if (_profile)
 			{
